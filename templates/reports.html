@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Helix HR{% endblock %}
+{% block page_heading %}Reports{% endblock %}
+{% block breadcrumb %}Reports{% endblock %}
+
+{% block content %}
+<div class="reports-page" data-test="reports-page">
+  <header class="page-header reports-header">
+    <div class="header-content">
+      <div class="header-text">
+        <span class="page-kicker">Workforce intelligence</span>
+        <h1 class="page-title" data-test="reports-title">Reports</h1>
+        <p class="page-subtitle">A clear view of your current workforce composition.</p>
+      </div>
+      <div class="report-period"><i class="bi bi-calendar3"></i> Current workforce</div>
+    </div>
+  </header>
+
+  <section class="report-stat-grid" aria-label="Workforce summary">
+    <article class="report-stat report-stat--teal"><span class="report-stat-icon"><i class="bi bi-people"></i></span><span class="report-stat-label">Total workforce</span><strong>{{ total_employees }}</strong><small>People in directory</small></article>
+    <article class="report-stat report-stat--green"><span class="report-stat-icon"><i class="bi bi-person-check"></i></span><span class="report-stat-label">Active</span><strong>{{ active_employees }}</strong><small>Currently active</small></article>
+    <article class="report-stat report-stat--amber"><span class="report-stat-icon"><i class="bi bi-calendar2-week"></i></span><span class="report-stat-label">On leave</span><strong>{{ leave_employees }}</strong><small>Temporarily away</small></article>
+    <article class="report-stat report-stat--rose"><span class="report-stat-icon"><i class="bi bi-person-x"></i></span><span class="report-stat-label">Inactive</span><strong>{{ inactive_employees }}</strong><small>Not currently active</small></article>
+  </section>
+
+  <section class="report-panel" data-test="department-report">
+    <div class="report-panel-heading"><div><span class="panel-eyebrow">Distribution</span><h2>Employees by department</h2></div><i class="bi bi-bar-chart-line panel-heading-icon"></i></div>
+    {% if department_report %}
+    <div class="department-report-list">
+      {% for department in department_report %}
+      <div class="department-report-row">
+        <div class="department-report-name"><span class="department-report-mark">{{ department.label|first }}</span><strong>{{ department.label }}</strong></div>
+        <div class="department-report-bar"><span style="width: {% widthratio department.count total_employees 100 %}%"></span></div>
+        <div class="department-report-value"><strong>{{ department.count }}</strong><small>{{ department.active_count }} active</small></div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon"><i class="bi bi-bar-chart"></i></div><h3>No report data yet</h3><p>Add employees to see department distribution.</p></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

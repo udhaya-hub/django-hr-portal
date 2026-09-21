@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Helix HR{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-root" data-test="dashboard-root">
+  <!-- Page Header -->
+  <header class="page-header" data-test="dashboard-header">
+    <div class="header-content">
+      <div class="header-text">
+        <span class="page-kicker" data-test="page-kicker">Overview</span>
+        <h1 class="page-title" data-test="dashboard-title">Dashboard</h1>
+        <p class="page-subtitle" data-test="welcome-message">Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong></p>
+      </div>
+      <div class="header-actions">
+        <form method="get" action="{% url 'dashboard' %}" class="search-form" id="search-form" data-test="search-form">
+          <div class="search-field">
+            <i class="bi bi-search search-icon"></i>
+            <label for="employee-search" class="visually-hidden">Search employees</label>
+            <input 
+              type="search" 
+              id="employee-search" 
+              name="search" 
+              data-test="employee-search" 
+              class="form-control" 
+              placeholder="Search employees by name, ID, or department..." 
+              value="{{ search_query }}"
+              autocomplete="off">
+            {% if search_query %}
+            <a href="{% url 'dashboard' %}" class="search-clear" id="search-clear" data-test="search-clear" aria-label="Clear search">
+              <i class="bi bi-x-lg"></i>
+            </a>
+            {% endif %}
+          </div>
+        </form>
+        <div class="action-buttons">
+          <button type="button" class="btn btn-ghost" id="filter-toggle" data-test="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
+            <i class="bi bi-funnel"></i>
+            <span>Filters</span>
+          </button>
+          <a href="{% url 'employee_add' %}" class="btn btn-primary" id="add-employee" data-test="add-employee">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add Employee</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible Filter Panel -->
+    <div class="filter-panel" id="filter-panel" data-test="filter-panel" hidden>
+      <form method="get" action="{% url 'dashboard' %}" class="filter-form" id="filter-form">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label for="department-filter" class="filter-label">Department</label>
+            <select id="department-filter" name="department" data-test="department-filter" class="form-select">
+              <option value="">All departments</option>
+              {% for value, label in departments %}
+              <option value="{{ value }}" {% if department_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="status-filter" class="filter-label">Status</label>
+            <select id="status-filter" name="status" data-test="status-filter" class="form-select">
+              <option value="">All statuses</option>
+              {% for value, label in statuses %}
+              <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group filter-actions">
+            <button type="submit" class="btn btn-primary" data-test="filter-apply">
+              <i class="bi bi-check-lg"></i> Apply
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost" data-test="filter-clear">
+              <i class="bi bi-x-lg"></i> Clear
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </header>
+
+  <!-- Stats Grid -->
+  <section class="stats-section" aria-labelledby="stats-heading" data-test="stats-section">
+    <h2 id="stats-heading" class="visually-hidden">Key Metrics</h2>
+    <div class="stat-grid">
+      <article class="stat-card stat-card--primary" data-test="stat-total" style="--delay: 0ms">
+        <div class="stat-icon stat-icon--primary"><i class="bi bi-people"></i></div>
+        <div class="stat-content">
+          <div class="stat-value" data-test="stat-total-value">{{ total_employees }}</div>
+          <div class="stat-label">Total Employees</div>
+        </div>
+        <div class="stat-trend trend--neutral" data-test="stat-total-trend">
+          <i class="bi bi-graph-up"></i> Current workforce
+        </div>
+      </article>
+      <article class="stat-card stat-card--success" data-test="stat-active" style="--delay: 100ms">
+        <div class="stat-icon stat-icon--success"><i class="bi bi-person-check"></i></div>
+        <div class="stat-content">
+          <div class="stat-value" data-test="stat-active-value">{{ active_employees }}</div>
+          <div class="stat-label">Active Employees</div>
+        </div>
+        <div class="stat-trend trend--up" data-test="stat-active-trend">
+          <i class="bi bi-graph-up"></i> Currently active
+        </div>
+      </article>
+      <article class="stat-card stat-card--danger" data-test="stat-inactive" style="--delay: 200ms">
+        <div class="stat-icon stat-icon--danger"><i class="bi bi-person-x"></i></div>
+        <div class="stat-content">
+          <div class="stat-value" data-test="stat-inactive-value">{{ inactive_employees }}</div>
+          <div class="stat-label">Inactive Employees</div>
+        </div>
+        <div class="stat-trend trend--down" data-test="stat-inactive-trend">
+          <i class="bi bi-graph-down"></i> Currently inactive
+        </div>
+      </article>
+      <article class="stat-card stat-card--warning" data-test="stat-leave" style="--delay: 300ms">
+        <div class="stat-icon stat-icon--warning"><i class="bi bi-calendar2-week"></i></div>
+        <div class="stat-content">
+          <div class="stat-value" data-test="stat-leave-value">{{ leave_employees }}</div>
+          <div class="stat-label">On Leave</div>
+        </div>
+        <div class="stat-trend trend--neutral" data-test="stat-leave-trend">
+          <i class="bi bi-clock"></i> Currently away
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Employee Table Panel -->
+  <section class="card employee-panel" data-test="employee-table-card">
+    <div class="panel-header">
+      <div class="panel-title-group">
+        <h2 class="panel-title" data-test="panel-title">Employees</h2>
+        <span class="panel-count" data-test="employee-count">
+          {% if employees %}
+            Showing {{ employees|length }} employee{{ employees|length|pluralize }}
+          {% else %}
+            No employees found
+          {% endif %}
+        </span>
+      </div>
+      <div class="panel-toolbar">
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button type="button" class="view-btn active" data-view="table" aria-pressed="true" title="Table view">
+            <i class="bi bi-table"></i>
+          </button>
+          <button type="button" class="view-btn" data-view="cards" aria-pressed="false" title="Card view">
+            <i class="bi bi-grid-3x3-gap"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {% if employees %}
+    <div class="table-container" data-test="table-container">
+      <div class="table-wrap">
+        <table class="hr-table" id="employee-table" data-test="employee-table">
+          <thead>
+            <tr>
+              <th scope="col" data-test="th-employee-id">Employee ID</th>
+              <th scope="col" data-test="th-name">Name</th>
+              <th scope="col" data-test="th-department">Department</th>
+              <th scope="col" data-test="th-status">Status</th>
+              <th scope="col" data-test="th-actions"><i class="bi bi-three-dots-vertical"></i></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for employee in employees %}
+            <tr 
+              id="employee-row-{{ employee.id }}" 
+              data-test="employee-row" 
+              data-employee-id="{{ employee.employee_id }}"
+              class="employee-row"
+              style="--row-index: {{ forloop.counter0 }}"
+            >
+              <td id="employee-id-{{ employee.id }}" data-test="employee-id">
+                <code class="employee-id">{{ employee.employee_id }}</code>
+              </td>
+              <td id="employee-name-{{ employee.id }}" data-test="employee-name">
+                <a href="{% url 'employee_detail' employee.pk %}" class="employee-link" data-test="employee-link">
+                  <div class="employee-avatar" data-test="employee-avatar">
+                    {{ employee.first_name|first }}{{ employee.last_name|first }}
+                  </div>
+                  <div class="employee-details">
+                    <span class="employee-name">{{ employee.get_full_name }}</span>
+                    <span class="employee-email">View employee profile</span>
+                  </div>
+                </a>
+              </td>
+              <td id="employee-department-{{ employee.id }}" data-test="employee-department">
+                <span class="department-badge">{{ employee.department }}</span>
+              </td>
+              <td id="employee-status-{{ employee.id }}" data-test="employee-status">
+                {% if employee.employment_status == 'Active' %}
+                <span class="status-badge status-badge--active" data-test="status-active">
+                  <i class="bi bi-circle-fill status-dot"></i> Active
+                </span>
+                {% elif employee.employment_status == 'Inactive' %}
+                <span class="status-badge status-badge--inactive" data-test="status-inactive">
+                  <i class="bi bi-circle-fill status-dot"></i> Inactive
+                </span>
+                {% else %}
+                <span class="status-badge status-badge--leave" data-test="status-on-leave">
+                  <i class="bi bi-circle-fill status-dot"></i> On Leave
+                </span>
+                {% endif %}
+              </td>
+              <td id="employee-actions-{{ employee.id }}" data-test="employee-actions">
+                <div class="action-menu" data-test="action-menu">
+                  <button type="button" class="action-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Actions for {{ employee.get_full_name }}">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <div class="action-dropdown" role="menu" hidden>
+                    <a href="{% url 'employee_detail' employee.pk %}" class="action-item" data-test="employee-view" role="menuitem">
+                      <i class="bi bi-eye"></i> View
+                    </a>
+                    <button type="button" class="action-item" data-test="employee-edit" role="menuitem">
+                      <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <div class="action-divider"></div>
+                    <button type="button" class="action-item action-item--danger" data-test="employee-delete" role="menuitem">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state" data-test="empty-state">
+      <div class="empty-icon"><i class="bi bi-people"></i></div>
+      <h3>No Employees Found</h3>
+      <p>{% if search_query or department_filter or status_filter %}No employees match the selected filters.{% else %}Get started by adding your first employee to the directory.{% endif %}</p>
+      <a href="{% url 'employee_add' %}" class="btn btn-primary" data-test="empty-add-employee">
+        <i class="bi bi-plus-lg"></i> Add Your First Employee
+      </a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  'use strict';
+  
+  // Filter panel toggle
+  const filterToggle = document.getElementById('filter-toggle');
+  const filterPanel = document.getElementById('filter-panel');
+  
+  if (filterToggle && filterPanel) {
+    filterToggle.addEventListener('click', function() {
+      const isHidden = filterPanel.hasAttribute('hidden');
+      if (isHidden) {
+        filterPanel.hidden = false;
+        filterToggle.setAttribute('aria-expanded', 'true');
+        filterPanel.style.animation = 'slideDown 0.3s ease forwards';
+      } else {
+        filterPanel.style.animation = 'slideUp 0.3s ease forwards';
+        setTimeout(() => {
+          filterPanel.hidden = true;
+          filterToggle.setAttribute('aria-expanded', 'false');
+        }, 300);
+      }
+    });
+  }
+
+  // Auto-submit filters
+  document.querySelectorAll('#department-filter, #status-filter').forEach(select => {
+    select.addEventListener('change', function() {
+      document.getElementById('filter-form').submit();
+    });
+  });
+
+  // Position action menus against the viewport so table overflow cannot clip them.
+  const closeDropdown = function(dropdown) {
+    dropdown.hidden = true;
+    if (dropdown._actionTrigger) {
+      dropdown._actionTrigger.setAttribute('aria-expanded', 'false');
+    }
+    if (dropdown._actionMenu) {
+      dropdown._actionMenu.appendChild(dropdown);
+    }
+    dropdown.classList.remove('action-dropdown--floating');
+    dropdown.style.top = '';
+    dropdown.style.left = '';
+  };
+
+  const placeDropdown = function(trigger, dropdown) {
+    const triggerRect = trigger.getBoundingClientRect();
+    const edgePadding = 8;
+    const gap = 8;
+    const preferredLeft = triggerRect.right - dropdown.offsetWidth;
+    const left = Math.max(edgePadding, Math.min(preferredLeft, window.innerWidth - dropdown.offsetWidth - edgePadding));
+    const opensBelow = triggerRect.bottom + gap + dropdown.offsetHeight <= window.innerHeight - edgePadding;
+    const top = opensBelow
+      ? triggerRect.bottom + gap
+      : Math.max(edgePadding, triggerRect.top - dropdown.offsetHeight - gap);
+
+    dropdown.style.left = `${left}px`;
+    dropdown.style.top = `${top}px`;
+  };
+
+  // Action menu dropdowns
+  document.querySelectorAll('.action-menu').forEach(menu => {
+    const trigger = menu.querySelector('.action-trigger');
+    const dropdown = menu.querySelector('.action-dropdown');
+    dropdown._actionTrigger = trigger;
+    dropdown._actionMenu = menu;
+    
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const isOpen = !dropdown.hidden;
+      
+      // Close all other dropdowns
+      document.querySelectorAll('.action-dropdown').forEach(d => {
+        closeDropdown(d);
+      });
+      
+      if (!isOpen) {
+        document.body.appendChild(dropdown);
+        dropdown.hidden = false;
+        trigger.setAttribute('aria-expanded', 'true');
+        dropdown.classList.add('action-dropdown--floating');
+        placeDropdown(trigger, dropdown);
+        dropdown.style.animation = 'fadeInScale 0.15s ease forwards';
+      }
+    });
+  });
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.action-dropdown').forEach(d => {
+      closeDropdown(d);
+    });
+  });
+
+  window.addEventListener('resize', function() {
+    document.querySelectorAll('.action-dropdown--floating').forEach(dropdown => {
+      if (!dropdown.hidden && dropdown._actionTrigger) {
+        placeDropdown(dropdown._actionTrigger, dropdown);
+      }
+    });
+  });
+
+  // Row hover effect
+  document.querySelectorAll('.employee-row').forEach(row => {
+    row.addEventListener('mouseenter', function() {
+      this.classList.add('table-active');
+    });
+    row.addEventListener('mouseleave', function() {
+      this.classList.remove('table-active');
+    });
+  });
+
+  // Staggered row entrance animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.employee-row').forEach(row => {
+    row.style.animationPlayState = 'paused';
+    observer.observe(row);
+  });
+
+  // Search input enhancement
+  const searchInput = document.getElementById('employee-search');
+  const searchClear = document.getElementById('search-clear');
+  
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      if (searchClear) {
+        searchClear.style.display = this.value ? 'flex' : 'none';
+      }
+    });
+    
+    // Keyboard shortcut: / to focus search
+    document.addEventListener('keydown', function(e) {
+      if (e.key === '/' && document.activeElement !== searchInput && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      
+      // Escape to clear search
+      if (e.key === 'Escape' && document.activeElement === searchInput) {
+        searchInput.blur();
+      }
+    });
+  }
+
+  // Keyboard navigation for table rows
+  document.querySelectorAll('.employee-row').forEach((row, index) => {
+    row.setAttribute('tabindex', '0');
+    row.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const viewBtn = this.querySelector('[data-test="employee-view"]');
+        if (viewBtn) viewBtn.click();
+      }
+    });
+  });
+
+  // Reduced motion support
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (prefersReducedMotion.matches) {
+    document.documentElement.style.setProperty('--animation-duration', '0.01ms');
+    document.documentElement.style.setProperty('--transition-duration', '0.01ms');
+  }
+})();
+</script>
+{% endblock %}

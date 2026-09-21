@@ -1,0 +1,6 @@
+Django>=4.2,<5.0
+psycopg2-binary>=2.9.9
+pytest>=7.4.0
+pytest-django>=4.5.0
+selenium>=4.10.0
+webdriver-manager>=4.0.0

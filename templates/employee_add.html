@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Add Employee - HR Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-sm border-0" data-test="employee-form-card">
+            <div class="card-header bg-white border-0 py-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="h4 mb-1" data-test="form-title">Add New Employee</h2>
+                        <p class="text-muted mb-0">Fill in the details below to create a new employee record</p>
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary" data-test="cancel-link">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" action="{% url 'employee_add' %}" id="employee-form" data-test="employee-form" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label fw-medium">
+                                {{ form.first_name.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.first_name }}
+                            <div class="invalid-feedback" id="first-name-error" data-test="first-name-error"></div>
+                            {% if form.first_name.help_text %}
+                            <div class="form-text">{{ form.first_name.help_text }}</div>
+                            {% endif %}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger small mt-1" data-test="first-name-server-error">
+                                {{ form.first_name.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label fw-medium">
+                                {{ form.last_name.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.last_name }}
+                            <div class="invalid-feedback" id="last-name-error" data-test="last-name-error"></div>
+                            {% if form.last_name.help_text %}
+                            <div class="form-text">{{ form.last_name.help_text }}</div>
+                            {% endif %}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger small mt-1" data-test="last-name-server-error">
+                                {{ form.last_name.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.employee_id.id_for_label }}" class="form-label fw-medium">
+                                {{ form.employee_id.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.employee_id }}
+                            <div class="invalid-feedback" id="employee-id-error" data-test="employee-id-error"></div>
+                            {% if form.employee_id.help_text %}
+                            <div class="form-text">{{ form.employee_id.help_text }}</div>
+                            {% endif %}
+                            {% if form.employee_id.errors %}
+                            <div class="text-danger small mt-1" data-test="employee-id-server-error">
+                                {{ form.employee_id.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.department.id_for_label }}" class="form-label fw-medium">
+                                {{ form.department.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.department }}
+                            <div class="invalid-feedback" id="department-error" data-test="department-error"></div>
+                            {% if form.department.errors %}
+                            <div class="text-danger small mt-1" data-test="department-server-error">
+                                {{ form.department.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.employment_status.id_for_label }}" class="form-label fw-medium">
+                                {{ form.employment_status.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.employment_status }}
+                            <div class="invalid-feedback" id="employment-status-error" data-test="employment-status-error"></div>
+                            {% if form.employment_status.errors %}
+                            <div class="text-danger small mt-1" data-test="employment-status-server-error">
+                                {{ form.employment_status.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger mt-3" data-test="form-non-field-errors">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top" data-test="form-actions">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary" id="cancel-btn" data-test="cancel-btn">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="save-employee" data-test="save-employee">
+                            <i class="bi bi-save me-2"></i>Save Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    var validator = new EmployeeFormValidator('#employee-form');
+    validator.init();
+});
+</script>
+{% endblock %}

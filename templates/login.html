@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Login - HR Portal{% endblock %}
+
+{% block content %}
+<div class="login-page" data-test="login-page">
+    <div class="login-shell">
+        <div class="login-intro">
+            <div class="login-brand-mark"><i class="bi bi-buildings"></i></div>
+            <span class="login-kicker">Helix HR / Workforce OS</span>
+            <h1>People operations, with clarity.</h1>
+            <p>A calm, focused workspace for keeping your workforce moving.</p>
+            <div class="login-trust"><i class="bi bi-shield-check"></i><span>Secure access for your HR team</span></div>
+        </div>
+        <div class="card shadow-sm border-0 login-card" data-test="login-card">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-building text-primary" style="font-size: 3rem;"></i>
+                    <h2 class="mt-3 fw-bold">Welcome Back</h2>
+                    <p class="text-muted">Sign in to access the HR Portal</p>
+                </div>
+
+                <form method="post" action="{% url 'login' %}" id="login-form" data-test="login-form" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="login-username" class="form-label fw-medium">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="login-username" 
+                                   name="username" 
+                                   data-test="login-username"
+                                   placeholder="Enter your username"
+                                   autocomplete="username"
+                                   required
+                                   autofocus
+                                   value="{{ request.POST.username|default:'' }}">
+                        </div>
+                        <div class="invalid-feedback" id="login-username-error" data-test="login-username-error"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="login-password" class="form-label fw-medium">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="login-password" 
+                                   name="password" 
+                                   data-test="login-password"
+                                   placeholder="Enter your password"
+                                   autocomplete="current-password"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" id="login-password-error" data-test="login-password-error"></div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="login-submit" data-test="login-submit">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                    </div>
+                </form>
+
+                <div id="login-error" class="alert alert-danger mt-3 d-none" data-test="login-error" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span id="login-error-message"></span>
+                </div>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Use Django superuser credentials to login
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#login-form').on('submit', function(e) {
+        var username = $('#login-username').val().trim();
+        var password = $('#login-password').val();
+        var hasError = false;
+
+        $('.invalid-feedback').text('').hide();
+        $('#login-username, #login-password').removeClass('is-invalid');
+
+        if (!username) {
+            $('#login-username').addClass('is-invalid');
+            $('#login-username-error').text('Username is required.').show();
+            hasError = true;
+        }
+
+        if (!password) {
+            $('#login-password').addClass('is-invalid');
+            $('#login-password-error').text('Password is required.').show();
+            hasError = true;
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            return false;
+        }
+
+        $('#login-error').addClass('d-none').removeClass('show');
+    });
+
+    $('#login-username, #login-password').on('input', function() {
+        $(this).removeClass('is-invalid');
+        $(this).siblings('.invalid-feedback').text('').hide();
+        $('#login-error').addClass('d-none').removeClass('show');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Helix HR{% endblock %}
+{% block page_heading %}Settings{% endblock %}
+{% block breadcrumb %}Settings{% endblock %}
+
+{% block content %}
+<div class="settings-page" data-test="settings-page">
+  <header class="page-header settings-header">
+    <div class="header-text">
+      <span class="page-kicker">Workspace preferences</span>
+      <h1 class="page-title" data-test="settings-title">Settings</h1>
+      <p class="page-subtitle">Shape Helix HR around the way your team works.</p>
+    </div>
+  </header>
+
+  <div class="settings-layout">
+    <aside class="settings-menu" aria-label="Settings sections">
+      <a class="settings-menu-item is-current" href="#appearance"><i class="bi bi-palette2"></i><span>Appearance</span><i class="bi bi-chevron-right"></i></a>
+      <a class="settings-menu-item" href="#notifications"><i class="bi bi-bell"></i><span>Notifications</span><i class="bi bi-chevron-right"></i></a>
+      <a class="settings-menu-item" href="#account"><i class="bi bi-person-circle"></i><span>Account</span><i class="bi bi-chevron-right"></i></a>
+    </aside>
+
+    <div class="settings-content">
+      <section class="settings-card" id="appearance" data-test="appearance-settings">
+        <div class="settings-card-heading"><div><span class="panel-eyebrow">Interface</span><h2>Appearance</h2><p>Choose how Helix HR looks on this device.</p></div><i class="bi bi-stars settings-heading-icon"></i></div>
+        <div class="theme-options" role="group" aria-label="Theme selection">
+          <button type="button" class="theme-option" data-theme-choice="light"><span class="theme-preview theme-preview--light"><i class="bi bi-sun"></i></span><strong>Light</strong><small>Bright and focused</small></button>
+          <button type="button" class="theme-option" data-theme-choice="dark"><span class="theme-preview theme-preview--dark"><i class="bi bi-moon-stars"></i></span><strong>Dark</strong><small>Comfortable at night</small></button>
+        </div>
+        <p class="settings-note"><i class="bi bi-info-circle"></i> Your theme preference is saved automatically in this browser.</p>
+      </section>
+
+      <section class="settings-card" id="notifications" data-test="notification-settings">
+        <div class="settings-card-heading"><div><span class="panel-eyebrow">Updates</span><h2>Notifications</h2><p>Choose which updates you want to receive.</p></div><i class="bi bi-bell settings-heading-icon"></i></div>
+        <label class="settings-toggle"><span><strong>Workforce updates</strong><small>Notify me when employee records change</small></span><input type="checkbox" checked><span class="toggle-control"></span></label>
+        <label class="settings-toggle"><span><strong>Monthly summary</strong><small>Receive a monthly workforce snapshot</small></span><input type="checkbox" checked><span class="toggle-control"></span></label>
+      </section>
+
+      <section class="settings-card" id="account" data-test="account-settings">
+        <div class="settings-card-heading"><div><span class="panel-eyebrow">Signed in as</span><h2>{{ profile_user.get_full_name|default:profile_user.username }}</h2><p>Administrator account with access to the HR workspace.</p></div><span class="account-badge"><i class="bi bi-shield-check"></i> Secure</span></div>
+        <div class="account-summary"><span class="account-avatar">{{ profile_user.username|first|upper }}</span><div><strong>{{ profile_user.username }}</strong><small>{{ profile_user.email|default:"No email address added" }}</small></div><span class="account-role">Administrator</span></div>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const root = document.documentElement;
+  const options = document.querySelectorAll('[data-theme-choice]');
+  const updateTheme = function(theme) {
+    root.dataset.theme = theme;
+    localStorage.setItem('helix-theme', theme);
+    options.forEach(function(option) {
+      option.classList.toggle('is-selected', option.dataset.themeChoice === theme);
+      option.setAttribute('aria-pressed', option.dataset.themeChoice === theme ? 'true' : 'false');
+    });
+  };
+  updateTheme(localStorage.getItem('helix-theme') || 'light');
+  options.forEach(function(option) {
+    option.addEventListener('click', function() { updateTheme(option.dataset.themeChoice); });
+  });
+})();
+</script>
+{% endblock %}

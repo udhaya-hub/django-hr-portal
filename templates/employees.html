@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Employees - Helix HR{% endblock %}
+{% block page_heading %}Employees{% endblock %}
+{% block breadcrumb %}Employees{% endblock %}
+
+{% block content %}
+<div class="directory-page" data-test="employees-page">
+  <header class="page-header directory-header">
+    <div class="header-content">
+      <div class="header-text">
+        <span class="page-kicker">People directory</span>
+        <h1 class="page-title" data-test="employees-title">Employees</h1>
+        <p class="page-subtitle">Search, filter, and open employee records.</p>
+      </div>
+      <div class="header-actions">
+        <form method="get" action="{% url 'employees' %}" class="search-form" data-test="employees-search-form">
+          <div class="search-field">
+            <i class="bi bi-search search-icon"></i>
+            <label for="directory-search" class="visually-hidden">Search employees</label>
+            <input type="search" id="directory-search" name="search" class="form-control" placeholder="Search by name, ID, or department" value="{{ search_query }}">
+          </div>
+        </form>
+        <a href="{% url 'employee_add' %}" class="btn btn-primary" data-test="directory-add-employee"><i class="bi bi-plus-lg"></i> Add employee</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="directory-toolbar" data-test="employees-toolbar">
+    <form method="get" action="{% url 'employees' %}" class="directory-filters">
+      <input type="hidden" name="search" value="{{ search_query }}">
+      <label class="filter-label" for="directory-department">Department</label>
+      <select id="directory-department" name="department" class="form-select">
+        <option value="">All departments</option>
+        {% for value, label in departments %}<option value="{{ value }}" {% if department_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <label class="filter-label" for="directory-status">Status</label>
+      <select id="directory-status" name="status" class="form-select">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <span class="directory-count">{{ employees|length }} result{{ employees|length|pluralize }}</span>
+    </form>
+  </section>
+
+  <section class="card employee-panel directory-table" data-test="directory-table-card">
+    {% if employees %}
+    <div class="table-container">
+      <div class="table-wrap">
+        <table class="hr-table" id="employees-table" data-test="employees-table">
+          <thead><tr><th>Employee ID</th><th>Name</th><th>Department</th><th>Status</th><th>Open</th></tr></thead>
+          <tbody>
+            {% for employee in employees %}
+            <tr class="employee-row" data-test="directory-row">
+              <td><code class="employee-id">{{ employee.employee_id }}</code></td>
+              <td>
+                <a href="{% url 'employee_detail' employee.pk %}" class="employee-link">
+                  <div class="employee-avatar">{{ employee.first_name|first }}{{ employee.last_name|first }}</div>
+                  <div class="employee-details"><span class="employee-name">{{ employee.get_full_name }}</span><span class="employee-email">Open profile</span></div>
+                </a>
+              </td>
+              <td><span class="department-badge">{{ employee.department }}</span></td>
+              <td>
+                {% if employee.employment_status == 'Active' %}<span class="status-badge status-badge--active"><i class="bi bi-circle-fill status-dot"></i> Active</span>
+                {% elif employee.employment_status == 'Inactive' %}<span class="status-badge status-badge--inactive"><i class="bi bi-circle-fill status-dot"></i> Inactive</span>
+                {% else %}<span class="status-badge status-badge--leave"><i class="bi bi-circle-fill status-dot"></i> On Leave</span>{% endif %}
+              </td>
+              <td><a href="{% url 'employee_detail' employee.pk %}" class="table-open-link">View <i class="bi bi-arrow-up-right"></i></a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon"><i class="bi bi-person-slash"></i></div><h3>No employees found</h3><p>Try adjusting your search or filters.</p><a href="{% url 'employees' %}" class="btn btn-ghost">Clear filters</a></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('#directory-department, #directory-status').forEach(function(select) {
+    select.addEventListener('change', function() { this.form.submit(); });
+  });
+</script>
+{% endblock %}
